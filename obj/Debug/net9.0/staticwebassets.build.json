@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "N+Qs98pI1nikoEka9kc5U0oN/MiP/HnasaG8M26mKwk=",
+  "Source": "PatientRecovery.DoctorService",
+  "BasePath": "_content/PatientRecovery.DoctorService",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
