@@ -5,6 +5,9 @@ namespace PatientRecoverySystem.DoctorService.Models
 {
     public class Doctor : BaseEntity
     {
+        public string Username { get; set; } = null!;
+        public string Password { get; set; } = null!; // Bu yerda hash qilingan parol saqlanadi
+        public string Role { get; set; } = "Doctor";
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Specialization { get; set; }

@@ -145,3 +145,6 @@ F:\PatientRecoverySystem\PatientRecovery.DoctorService\obj\Debug\net9.0\refint\P
 F:\PatientRecoverySystem\PatientRecovery.DoctorService\obj\Debug\net9.0\PatientRecovery.DoctorService.pdb
 F:\PatientRecoverySystem\PatientRecovery.DoctorService\obj\Debug\net9.0\PatientRecovery.DoctorService.genruntimeconfig.cache
 F:\PatientRecoverySystem\PatientRecovery.DoctorService\obj\Debug\net9.0\ref\PatientRecovery.DoctorService.dll
+F:\PatientRecoverySystem\PatientRecovery.DoctorService\obj\Debug\net9.0\PatientRecovery.DoctorService.sourcelink.json
+F:\PatientRecoverySystem\PatientRecovery.DoctorService\bin\Debug\net9.0\BCrypt.Net-Next.dll
+F:\PatientRecoverySystem\PatientRecovery.DoctorService\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

@@ -1,9 +1,11 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PatientRecovery.Shared.Messaging;
 using PatientRecoverySystem.DoctorService.DTOs;
 using PatientRecoverySystem.DoctorService.Features.Commands;
 using PatientRecoverySystem.DoctorService.Features.Queries;
+using PatientRecoverySystem.DoctorService.Services;
 
 namespace PatientRecoverySystem.DoctorService.Controllers
 {
@@ -13,53 +15,92 @@ namespace PatientRecoverySystem.DoctorService.Controllers
     {
         private readonly IMediator _mediator;
         private readonly IRabbitMQService _messageBus;
+        private readonly IDoctorService _doctorService;
+        private readonly ILogger<DoctorsController> _logger;
 
-        public DoctorsController(IMediator mediator, IRabbitMQService messageBus)
+        public DoctorsController(IMediator mediator, IRabbitMQService messageBus,
+            IDoctorService doctorService,
+            ILogger<DoctorsController> logger)
         {
             _mediator = mediator;
             _messageBus = messageBus;
+            _doctorService = doctorService;
+            _logger = logger;
         }
 
+        [HttpPost("register")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<DoctorDto>> Register(CreateDoctorDto dto)
+        {
+            try
+            {
+                var result = await _doctorService.CreateDoctorAsync(dto);
+                // CreatedAtAction o'rniga Created ishlatamiz
+                return Created($"/api/doctors/{result.Id}", result);
+                // Yoki shunchaki Ok qaytaramiz
+                // return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error registering doctor");
+                return BadRequest(new { message = ex.Message });
+            }
+        }
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<DoctorDto>>> GetAll()
         {
-            var query = new GetAllDoctorsQuery();
-            var result = await _mediator.Send(query);
-            return Ok(result);
+            var doctors = await _doctorService.GetDoctorsAsync();
+            return Ok(doctors);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<DoctorDto>> Get(Guid id)
+        [HttpGet("details/{id}")]
+        [Authorize]
+        public async Task<ActionResult<DoctorDto>> GetById(Guid id)
         {
-            var query = new GetDoctorQuery { Id = id };
-            var result = await _mediator.Send(query);
+            var doctor = await _doctorService.GetDoctorByIdAsync(id);
+            if (doctor == null)
+                return NotFound();
 
+            return Ok(doctor);
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<LoginResponseDto>> Login(LoginDoctorDto dto)
+        {
+            try
+            {
+                var result = await _doctorService.LoginAsync(dto);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error logging in doctor");
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("update/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<DoctorDto>> Update(Guid id, [FromBody] CreateDoctorDto dto)
+        {
+            var result = await _doctorService.UpdateDoctorAsync(id, dto);
             if (result == null)
                 return NotFound();
 
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<DoctorDto>> Create([FromBody] CreateDoctorCommand command)
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> Delete(Guid id)
         {
-            var result = await _mediator.Send(command);
-            return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
+            await _doctorService.DeleteDoctorAsync(id);
+            return NoContent();
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult<DoctorDto>> Update(Guid id, [FromBody] UpdateDoctorCommand command)
-        {
-            if (id != command.Id)
-                return BadRequest();
 
-            var result = await _mediator.Send(command);
-
-            if (result == null)
-                return NotFound();
-
-            return Ok(result);
-        }
+    
 
         [HttpGet("available")]
         public async Task<ActionResult<IEnumerable<DoctorDto>>> GetAvailableDoctors([FromQuery] string specialization)
