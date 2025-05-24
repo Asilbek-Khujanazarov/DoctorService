@@ -5,6 +5,7 @@ using PatientRecovery.Shared.Messaging;
 using PatientRecoverySystem.DoctorService.DTOs;
 using PatientRecoverySystem.DoctorService.Features.Commands;
 using PatientRecoverySystem.DoctorService.Features.Queries;
+using PatientRecoverySystem.DoctorService.Repositories;
 using PatientRecoverySystem.DoctorService.Services;
 
 namespace PatientRecoverySystem.DoctorService.Controllers
@@ -15,17 +16,19 @@ namespace PatientRecoverySystem.DoctorService.Controllers
     {
         private readonly IMediator _mediator;
         private readonly IRabbitMQService _messageBus;
+          private readonly IDoctorRepository _repository;
         private readonly IDoctorService _doctorService;
         private readonly ILogger<DoctorsController> _logger;
 
         public DoctorsController(IMediator mediator, IRabbitMQService messageBus,
             IDoctorService doctorService,
-            ILogger<DoctorsController> logger)
+            ILogger<DoctorsController> logger, IDoctorRepository repository)
         {
             _mediator = mediator;
             _messageBus = messageBus;
             _doctorService = doctorService;
             _logger = logger;
+            _repository = repository;
         }
 
         [HttpPost("register")]
@@ -100,7 +103,7 @@ namespace PatientRecoverySystem.DoctorService.Controllers
         }
 
 
-    
+
 
         [HttpGet("available")]
         public async Task<ActionResult<IEnumerable<DoctorDto>>> GetAvailableDoctors([FromQuery] string specialization)
@@ -109,5 +112,44 @@ namespace PatientRecoverySystem.DoctorService.Controllers
             var result = await _mediator.Send(query);
             return Ok(result);
         }
+
+// Bemorni doktorga biriktirish (userId ni qo'shish)
+        [HttpPost("{doctorId}/assign-user")]
+        public async Task<IActionResult> AssignUser(Guid doctorId, [FromBody] string userId)
+        {
+            await _repository.AssignUserAsync(doctorId, userId);
+            return Ok();
+        }
+
+        // Bemorni doktordan ajratish (userId ni o‘chirish)
+        [HttpPost("{doctorId}/remove-user")]
+        public async Task<IActionResult> RemoveUser(Guid doctorId, [FromBody] string userId)
+        {
+            await _repository.RemoveUserAsync(doctorId, userId);
+            return Ok();
+        }
+     // GET: api/doctor/{doctorId}/userids
+        // Bitta doktorga biriktirilgan barcha UserId lar ro'yxatini chiqaradi
+        [HttpGet("{doctorId}/userids")]
+        public async Task<IActionResult> GetUserIds(Guid doctorId)
+        {
+            var doctor = await _repository.GetByIdAsyncUserId(doctorId);
+            if (doctor == null)
+                return NotFound("Doctor not found");
+
+            return Ok(doctor.UserIds ?? new System.Collections.Generic.List<string>());
+        }
+
+        // GET: api/doctor/{doctorId}
+        // Bitta doktorga oid barcha ma'lumotlarni chiqaradi (shu jumladan UserIds ro'yxati ham bor)
+        [HttpGet("{doctorId}")]
+        public async Task<IActionResult> GetDoctor(Guid doctorId)
+        {
+            var doctor = await _repository.GetByIdAsyncUserId(doctorId);
+            if (doctor == null)
+                return NotFound("Doctor not found");
+            return Ok(doctor);
+        }
+   
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PatientRecoverySystem.DoctorService.Models;
 
 namespace PatientRecoverySystem.DoctorService.Data
@@ -27,6 +28,14 @@ namespace PatientRecoverySystem.DoctorService.Data
                 .HasMany(d => d.Consultations)
                 .WithOne(c => c.Doctor)
                 .HasForeignKey(c => c.DoctorId);
+
+            var splitStringConverter = new ValueConverter<List<string>, string>(
+         v => v == null ? "" : string.Join(';', v),
+         v => string.IsNullOrEmpty(v) ? new List<string>() : v.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList()
+     );
+            modelBuilder.Entity<Doctor>()
+                .Property(d => d.UserIds)
+                .HasConversion(splitStringConverter);
         }
     }
 }

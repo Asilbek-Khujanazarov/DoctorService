@@ -15,6 +15,7 @@ namespace PatientRecoverySystem.DoctorService.Models
         public string ContactNumber { get; set; }
         public string Email { get; set; }
         public bool IsAvailable { get; set; }
+        public List<string> UserIds { get; set; } = new List<string>();
         public virtual ICollection<DoctorSchedule> Schedules { get; set; }
         public virtual ICollection<Consultation> Consultations { get; set; }
     }

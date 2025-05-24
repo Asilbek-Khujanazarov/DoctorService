@@ -73,11 +73,54 @@ namespace PatientRecoverySystem.DoctorService.Repositories
         public async Task<IEnumerable<Doctor>> GetAvailableDoctorsAsync(string specialization)
         {
             return await _context.Doctors
-                .Where(d => d.IsAvailable && 
-                           !d.IsDeleted && 
+                .Where(d => d.IsAvailable &&
+                           !d.IsDeleted &&
                            d.Specialization == specialization)
                 .Include(d => d.Schedules)
                 .ToListAsync();
+        }
+
+
+        public async Task AssignUserAsync(Guid doctorId, string userId)
+        {
+            var doctor = await GetByIdAsync(doctorId);
+            if (doctor == null)
+                throw new Exception("Doctor topilmadi");
+
+            if (doctor.UserIds == null)
+                doctor.UserIds = new List<string>();
+
+            if (!doctor.UserIds.Contains(userId))
+            {
+                doctor.UserIds.Add(userId);
+                await UpdateAsync(doctor);
+            }
+        }
+
+        public async Task RemoveUserAsync(Guid doctorId, string userId)
+        {
+            var doctor = await GetByIdAsync(doctorId);
+            if (doctor == null)
+                throw new Exception("Doctor topilmadi");
+
+            if (doctor.UserIds == null)
+                doctor.UserIds = new List<string>();
+
+            if (doctor.UserIds.Contains(userId))
+            {
+                doctor.UserIds.Remove(userId);
+                await UpdateAsync(doctor);
+            }
+        }
+
+         public async Task<Doctor> GetByIdAsyncUserId(Guid id)
+        {
+            return await _context.Doctors.FindAsync(id);
+        }
+
+        public async Task<List<Doctor>> GetAllAsyncUserId()
+        {
+            return await _context.Doctors.ToListAsync();
         }
     }
 }

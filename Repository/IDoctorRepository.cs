@@ -12,5 +12,11 @@ namespace PatientRecoverySystem.DoctorService.Repositories
         Task<IEnumerable<DoctorSchedule>> GetDoctorScheduleAsync(Guid doctorId);
         Task<IEnumerable<Consultation>> GetDoctorConsultationsAsync(Guid doctorId);
         Task<IEnumerable<Doctor>> GetAvailableDoctorsAsync(string specialization);
+
+        Task AssignUserAsync(Guid doctorId, string userId);
+        Task RemoveUserAsync(Guid doctorId, string userId);
+        
+        Task<List<Doctor>> GetAllAsyncUserId();
+        Task<Doctor> GetByIdAsyncUserId(Guid id);
     }
 }
